@@ -1,0 +1,41 @@
+const axios = require('axios');
+require('dotenv').config();
+
+const ZAPI_INSTANCE_ID = process.env.ZAPI_INSTANCE_ID;
+const ZAPI_TOKEN = process.env.ZAPI_TOKEN;
+const ZAPI_CLIENT_TOKEN = process.env.ZAPI_CLIENT_TOKEN;
+
+// Validation
+if (!ZAPI_INSTANCE_ID || !ZAPI_TOKEN) {
+    console.warn("⚠️ Z-API credentials (INSTANCE_ID, TOKEN) are missing in .env");
+}
+
+const headers = { 'Content-Type': 'application/json' };
+if (ZAPI_CLIENT_TOKEN) {
+    headers['Client-Token'] = ZAPI_CLIENT_TOKEN;
+}
+
+const api = axios.create({
+    baseURL: `https://api.z-api.io/instances/${ZAPI_INSTANCE_ID}/token/${ZAPI_TOKEN}`,
+    headers: headers
+});
+
+async function sendWhatsAppMessage(to, body) {
+    try {
+        console.log(`Sending message to ${to} via Z-API...`);
+        // Z-API expects 'phone' and 'message' (or 'message' inside 'text' object depending on endpoint)
+        // Using /send-text endpoint: https://developer.z-api.io/message/send-text
+        const response = await api.post('/send-text', {
+            phone: to,
+            message: body
+        });
+
+        console.log(`Message sent to ${to}:`, response.data);
+        return response.data;
+    } catch (error) {
+        console.error(`Error sending message to ${to} via Z-API:`, error.response ? error.response.data : error.message);
+        throw error;
+    }
+}
+
+module.exports = { sendWhatsAppMessage };
