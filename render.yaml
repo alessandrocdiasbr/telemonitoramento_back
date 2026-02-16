@@ -1,9 +1,11 @@
 services:
+  # Backend - Web Service (Free)
   - type: web
     name: telemonitoramento-backend
     env: node
     plan: free
     region: oregon
+    rootDir: backend
     buildCommand: npm install
     startCommand: npm start
     envVars:
@@ -24,7 +26,22 @@ services:
       - key: ZAPI_CLIENT_TOKEN
         sync: false
 
+  # Frontend - Static Site (Free)
+  - type: static
+    name: telemonitoramento-frontend
+    env: static
+    plan: free
+    region: oregon
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+
 databases:
   - name: telemonitoramento-db
+    plan: free
     region: oregon
-
+    ipAllowList: [] # Allow all IPs for now (or restrict if needed)
