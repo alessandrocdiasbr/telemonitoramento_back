@@ -26,6 +26,4 @@ services:
 databases:
   - name: telemonitoramento-db
     region: oregon
-    databaseName: telemonitoramento
-    user: postgres
 
