@@ -1,3 +1,4 @@
+
 # Sistema de Telemonitoramento de Hipertensos
 
 Sistema MVP para monitoramento de pacientes hipertensos via WhatsApp e Dashboard Web.
