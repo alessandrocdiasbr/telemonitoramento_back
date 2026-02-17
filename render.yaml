@@ -34,7 +34,6 @@ databases:
 
 staticSites:
   - name: telemonitoramento-frontend
-    plan: free
     rootDir: frontend
     buildCommand: npm install && npm run build
     publishPath: dist
