@@ -79,6 +79,27 @@ function PacientesList() {
                                         <td>
                                             <button
                                                 className="btn"
+                                                style={{ padding: '0.4rem 0.8rem', fontSize: '0.9rem', marginRight: '0.5rem', border: '1px solid #ccc', backgroundColor: '#25D366', color: 'white', borderColor: '#25D366' }}
+                                                onClick={async () => {
+                                                    const message = prompt(`Enviar mensagem para ${paciente.nome}:\n(Digite a mensagem abaixo)`);
+                                                    if (message) {
+                                                        try {
+                                                            await api.post('/send-message', {
+                                                                phone: paciente.telefone,
+                                                                message: message
+                                                            });
+                                                            alert('Mensagem enviada com sucesso!');
+                                                        } catch (error) {
+                                                            console.error(error);
+                                                            alert('Erro ao enviar mensagem.');
+                                                        }
+                                                    }
+                                                }}
+                                            >
+                                                WinZap
+                                            </button>
+                                            <button
+                                                className="btn"
                                                 style={{ padding: '0.4rem 0.8rem', fontSize: '0.9rem', marginRight: '0.5rem', border: '1px solid #ccc' }}
                                                 onClick={() => navigate(`/pacientes/${paciente.id}/historico`)}
                                             >
