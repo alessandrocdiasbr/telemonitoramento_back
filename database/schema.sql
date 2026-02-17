@@ -2,7 +2,7 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- 1. Tabela de Usuários
-CREATE TABLE usuarios (
+CREATE TABLE IF NOT EXISTS usuarios (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     nome VARCHAR(255) NOT NULL,
     telefone VARCHAR(20) UNIQUE NOT NULL, -- formato: +5531999999999
@@ -16,10 +16,10 @@ CREATE TABLE usuarios (
 );
 
 -- Índices para otimização
-CREATE INDEX idx_usuarios_telefone ON usuarios(telefone);
+CREATE INDEX IF NOT EXISTS idx_usuarios_telefone ON usuarios(telefone);
 
 -- 2. Tabela de Leituras (Histórico de PA e Temperatura)
-CREATE TABLE leituras (
+CREATE TABLE IF NOT EXISTS leituras (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     usuario_id UUID NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
     data_hora TIMESTAMP DEFAULT NOW(),
@@ -32,11 +32,11 @@ CREATE TABLE leituras (
 );
 
 -- Índices para otimização
-CREATE INDEX idx_leituras_usuario_id ON leituras(usuario_id);
-CREATE INDEX idx_leituras_data_hora ON leituras(data_hora);
+CREATE INDEX IF NOT EXISTS idx_leituras_usuario_id ON leituras(usuario_id);
+CREATE INDEX IF NOT EXISTS idx_leituras_data_hora ON leituras(data_hora);
 
 -- 3. Tabela de Alertas Enviados
-CREATE TABLE alertas_enviados (
+CREATE TABLE IF NOT EXISTS alertas_enviados (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     leitura_id UUID REFERENCES leituras(id) ON DELETE SET NULL,
     telefone_destinatario VARCHAR(20),
@@ -45,7 +45,7 @@ CREATE TABLE alertas_enviados (
 );
 
 -- 4. Tabela de Mensagens Agendadas (Cron Jobs)
-CREATE TABLE mensagens_agendadas (
+CREATE TABLE IF NOT EXISTS mensagens_agendadas (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     usuario_id UUID NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
     horario_envio TIME NOT NULL, -- ex: '08:00:00'
