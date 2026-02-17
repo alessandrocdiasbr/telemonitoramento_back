@@ -84,14 +84,18 @@ function PacientesList() {
                                                     const message = prompt(`Enviar mensagem para ${paciente.nome}:\n(Digite a mensagem abaixo)`);
                                                     if (message) {
                                                         try {
+                                                            // Sanitize phone: remove non-digits
+                                                            const cleanPhone = paciente.telefone.replace(/\D/g, '');
+
                                                             await api.post('/send-message', {
-                                                                phone: paciente.telefone,
+                                                                phone: cleanPhone,
                                                                 message: message
                                                             });
                                                             alert('Mensagem enviada com sucesso!');
                                                         } catch (error) {
                                                             console.error(error);
-                                                            alert('Erro ao enviar mensagem.');
+                                                            const errorMessage = error.response?.data?.details || error.response?.data?.error || 'Erro ao enviar mensagem.';
+                                                            alert(`Erro: ${JSON.stringify(errorMessage)}`);
                                                         }
                                                     }
                                                 }}
