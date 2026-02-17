@@ -26,9 +26,6 @@ services:
       - key: ZAPI_CLIENT_TOKEN
         sync: false
 
-      - key: ZAPI_CLIENT_TOKEN
-        sync: false
-
 databases:
   - name: telemonitoramento-db
     plan: free
