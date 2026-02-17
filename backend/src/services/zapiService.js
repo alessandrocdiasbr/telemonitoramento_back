@@ -1,9 +1,11 @@
 const axios = require('axios');
 require('dotenv').config();
 
-const ZAPI_INSTANCE_ID = process.env.ZAPI_INSTANCE_ID;
-const ZAPI_TOKEN = process.env.ZAPI_TOKEN;
-const ZAPI_CLIENT_TOKEN = process.env.ZAPI_CLIENT_TOKEN;
+const ZAPI_INSTANCE_ID = process.env.ZAPI_INSTANCE_ID?.trim();
+const ZAPI_TOKEN = process.env.ZAPI_TOKEN?.trim();
+const ZAPI_CLIENT_TOKEN = process.env.ZAPI_CLIENT_TOKEN?.trim();
+
+console.log(`Z-API Config: ID=${ZAPI_INSTANCE_ID ? '***' + ZAPI_INSTANCE_ID.slice(-4) : 'MISSING'}, Token=${ZAPI_TOKEN ? 'SET' : 'MISSING'}`);
 
 // Validation
 if (!ZAPI_INSTANCE_ID || !ZAPI_TOKEN) {

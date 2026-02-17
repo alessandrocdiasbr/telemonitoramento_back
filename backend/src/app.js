@@ -42,7 +42,10 @@ app.post('/api/send-message', async (req, res) => {
         res.status(200).json({ success: true, message: 'Message sent successfully' });
     } catch (error) {
         console.error('Error sending manual message:', error);
-        res.status(500).json({ error: 'Failed to send message' });
+        res.status(500).json({
+            error: 'Failed to send message',
+            details: error.response?.data || error.message
+        });
     }
 });
 
