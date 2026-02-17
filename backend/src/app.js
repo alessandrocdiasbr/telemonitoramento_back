@@ -21,10 +21,29 @@ app.put('/api/pacientes/:id', pacientesController.updatePaciente);
 app.get('/api/pacientes/:id/leituras', pacientesController.getLeituras);
 app.get('/api/historico/:usuarioId', pacientesController.getHistorico);
 
+const zapiService = require('./services/zapiService');
+
 // Trigger Test Cron (endpoint somente para teste manual se necessário)
 app.post('/api/enviar-mensagem-programada', async (req, res) => {
     // Lógica manual para teste
     res.send('Cron triggered manually (dummy endpoint)');
+});
+
+// Endpoint para envio manual de mensagem (Novo)
+app.post('/api/send-message', async (req, res) => {
+    const { phone, message } = req.body;
+
+    if (!phone || !message) {
+        return res.status(400).json({ error: 'Phone and message are required' });
+    }
+
+    try {
+        await zapiService.sendWhatsAppMessage(phone, message);
+        res.status(200).json({ success: true, message: 'Message sent successfully' });
+    } catch (error) {
+        console.error('Error sending manual message:', error);
+        res.status(500).json({ error: 'Failed to send message' });
+    }
 });
 
 const PORT = process.env.PORT || 3000;
