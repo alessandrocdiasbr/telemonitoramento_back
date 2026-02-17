@@ -43,6 +43,10 @@ function PacienteModal({ pacienteId, onClose }) {
 
     const options = {
         responsive: true,
+        interaction: {
+            mode: 'index',
+            intersect: false,
+        },
         plugins: {
             legend: {
                 position: 'top',
@@ -51,8 +55,55 @@ function PacienteModal({ pacienteId, onClose }) {
                 display: true,
                 text: 'Evolução Clínica (Últimas 30 leituras)',
             },
+            tooltip: {
+                callbacks: {
+                    label: function (context) {
+                        let label = context.dataset.label || '';
+                        if (label) {
+                            label += ': ';
+                        }
+                        if (context.parsed.y !== null) {
+                            label += context.parsed.y;
+                            if (label.includes('Temperatura')) label += ' °C';
+                            else label += ' mmHg';
+                        }
+                        return label;
+                    }
+                }
+            }
+        },
+        scales: {
+            x: {
+                ticks: {
+                    // Show only specific parts of the date if needed, but data prep is better.
+                    // Here we rely on labels being formatted already or we can use a callback
+                    maxRotation: 45,
+                    minRotation: 45
+                }
+            },
+            y: {
+                type: 'linear',
+                display: true,
+                position: 'left',
+                title: { display: true, text: 'Pressão (mmHg)' },
+                suggestedMin: 0,
+                suggestedMax: 180,
+            },
+            y1: {
+                type: 'linear',
+                display: true,
+                position: 'right',
+                title: { display: true, text: 'Temp (°C)' },
+                suggestedMin: 34,
+                suggestedMax: 40,
+                grid: {
+                    drawOnChartArea: false,
+                },
+            },
         },
     };
+
+
 
     const chartData = historico ? {
         labels: historico.labels,
@@ -62,12 +113,16 @@ function PacienteModal({ pacienteId, onClose }) {
                 data: historico.datasets[0].data,
                 borderColor: 'rgb(255, 99, 132)',
                 backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                yAxisID: 'y',
+                spanGaps: true
             },
             {
                 label: 'Diastólica',
                 data: historico.datasets[1].data,
                 borderColor: 'rgb(53, 162, 235)',
                 backgroundColor: 'rgba(53, 162, 235, 0.5)',
+                yAxisID: 'y',
+                spanGaps: true
             },
             {
                 label: 'Temperatura',
@@ -75,44 +130,10 @@ function PacienteModal({ pacienteId, onClose }) {
                 borderColor: 'rgb(75, 192, 192)',
                 backgroundColor: 'rgba(75, 192, 192, 0.5)',
                 yAxisID: 'y1',
+                spanGaps: true
             }
         ],
     } : null;
-
-    // Ajuste para escala de temperatura separada se necessário, ou mesmo gráfico
-    if (options.scales && !options.scales.y1) {
-        options.scales = {
-            y: {
-                type: 'linear',
-                display: true,
-                position: 'left',
-            },
-            y1: {
-                type: 'linear',
-                display: true,
-                position: 'right',
-                grid: {
-                    drawOnChartArea: false,
-                },
-            },
-        };
-    } else if (!options.scales) {
-        options.scales = {
-            y: {
-                type: 'linear',
-                display: true,
-                position: 'left',
-            },
-            y1: {
-                type: 'linear',
-                display: true,
-                position: 'right',
-                grid: {
-                    drawOnChartArea: false,
-                },
-            },
-        }
-    }
 
     return (
         <div className="modal-overlay" onClick={onClose}>
@@ -125,7 +146,26 @@ function PacienteModal({ pacienteId, onClose }) {
                 {loading ? <p>Carregando dados...</p> : (
                     <div>
                         {historico && historico.labels.length > 0 ? (
-                            <Line options={options} data={chartData} />
+                            <Line options={options} data={{
+                                ...chartData,
+                                labels: historico.labels.map(label => {
+                                    // Label format from backend might be full date string. 
+                                    // Try to shorten it to DD/MM HH:mm
+                                    try {
+                                        const date = new Date(label);
+                                        // If invalid date, return label as is
+                                        if (isNaN(date.getTime())) return label;
+
+                                        const day = date.getDate().toString().padStart(2, '0');
+                                        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                                        const hour = date.getHours().toString().padStart(2, '0');
+                                        const min = date.getMinutes().toString().padStart(2, '0');
+                                        return `${day}/${month} ${hour}:${min}`;
+                                    } catch (e) {
+                                        return label;
+                                    }
+                                })
+                            }} />
                         ) : (
                             <p>Nenhum histórico disponível para este paciente.</p>
                         )}

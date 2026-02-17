@@ -60,6 +60,13 @@ async function handleIncomingMessage(req, res) {
         const extractedData = await openaiService.extractVitalData(Body);
         console.log('Extracted Data:', extractedData);
 
+        // Check if meaningful data was extracted
+        if (!extractedData.sistolica && !extractedData.diastolica && !extractedData.temperatura) {
+            console.log('No vital data found in message. Skipping database save.');
+            await zapiService.sendWhatsAppMessage(telefone, 'Não entendi seus dados. Por favor, envie sua pressão (ex: 12/8) e/ou temperatura (ex: 36.5).');
+            return res.status(200).end();
+        }
+
         // Salvar leitura
         const leituraResult = await db.query(
             `INSERT INTO leituras (usuario_id, pressao_sistolica, pressao_diastolica, temperatura, texto_original, classificacao_risco, sintomas_relatados)
