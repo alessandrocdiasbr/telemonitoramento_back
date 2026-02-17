@@ -27,7 +27,7 @@ services:
         sync: false
 
   # Frontend - Static Site (Free)
-  - type: web
+  - type: static
     name: telemonitoramento-frontend
     env: static
     plan: free
