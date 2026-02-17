@@ -24,18 +24,24 @@ const api = axios.create({
 
 async function sendWhatsAppMessage(to, body) {
     try {
-        console.log(`Sending message to ${to} via Z-API...`);
+        // Ensure phone number has country code (Brazil +55)
+        let phone = to.replace(/\D/g, '');
+        if (phone.length >= 10 && phone.length <= 11) {
+            phone = '55' + phone;
+        }
+
+        console.log(`Sending message to ${phone} via Z-API...`);
         // Z-API expects 'phone' and 'message' (or 'message' inside 'text' object depending on endpoint)
         // Using /send-text endpoint: https://developer.z-api.io/message/send-text
         const response = await api.post('/send-text', {
-            phone: to,
+            phone: phone,
             message: body
         });
 
-        console.log(`Message sent to ${to}:`, response.data);
+        console.log(`Message sent to ${phone}:`, response.data);
         return response.data;
     } catch (error) {
-        console.error(`Error sending message to ${to} via Z-API:`, error.response ? error.response.data : error.message);
+        console.error(`Error sending message to ${to} via Z-API:`, error.response ? JSON.stringify(error.response.data) : error.message);
         throw error;
     }
 }
