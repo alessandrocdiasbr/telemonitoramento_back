@@ -2,7 +2,7 @@ services:
   # Backend - Web Service (Free)
   - type: web
     name: telemonitoramento-backend
-    env: node
+    runtime: node
     plan: free
     region: oregon
     rootDir: backend
@@ -30,7 +30,6 @@ databases:
   - name: telemonitoramento-db
     plan: free
     region: oregon
-    ipAllowList: [] # Allow all IPs for now (or restrict if needed)
 
 staticSites:
   - name: telemonitoramento-frontend
