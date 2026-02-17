@@ -3,8 +3,19 @@ const openaiService = require('../services/openaiService');
 const zapiService = require('../services/zapiService');
 // const twilioService = require('../services/twilioService'); // Deprecated
 
+const fs = require('fs');
+const path = require('path');
+
 async function handleIncomingMessage(req, res) {
     console.log('Receiving Webhook from Z-API:', JSON.stringify(req.body, null, 2));
+
+    // Log to file for debugging
+    try {
+        const logPath = path.join(__dirname, '../../webhook.log');
+        fs.appendFileSync(logPath, JSON.stringify(req.body, null, 2) + '\n---\n');
+    } catch (err) {
+        console.error('Error writing to webhook log:', err);
+    }
 
     try {
         // Z-API Structure handling
