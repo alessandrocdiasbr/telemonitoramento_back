@@ -26,21 +26,22 @@ services:
       - key: ZAPI_CLIENT_TOKEN
         sync: false
 
-  # Frontend - Static Site (Free)
-  - type: static
-    name: telemonitoramento-frontend
-    env: static
-    plan: free
-    rootDir: frontend
-    buildCommand: npm install && npm run build
-    staticPublishPath: dist
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
+      - key: ZAPI_CLIENT_TOKEN
+        sync: false
 
 databases:
   - name: telemonitoramento-db
     plan: free
     region: oregon
     ipAllowList: [] # Allow all IPs for now (or restrict if needed)
+
+staticSites:
+  - name: telemonitoramento-frontend
+    plan: free
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    publishPath: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
