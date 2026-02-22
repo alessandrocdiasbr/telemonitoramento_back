@@ -1,20 +1,36 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import api from '../services/api';
 import '../index.css';
 
 function Login() {
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
+    const [email, setEmail] = useState('');
+    const [senha, setSenha] = useState('');
     const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
-    const handleLogin = (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
-        if (username === 'admin' && password === 'admin123') {
-            localStorage.setItem('token', 'fake-token-123');
-            navigate('/dashboard');
-        } else {
-            setError('Credenciais inválidas. Tente admin / admin123');
+        setLoading(true);
+        setError('');
+        try {
+            const response = await api.post('/auth/login', { email, senha });
+            const { token, user } = response.data;
+
+            localStorage.setItem('token', token);
+            localStorage.setItem('user', JSON.stringify(user));
+
+            if (user.is_first_login) {
+                navigate('/reset-password');
+            } else {
+                navigate('/dashboard');
+            }
+        } catch (error) {
+            console.error(error);
+            setError(error.response?.data?.error || 'Erro ao realizar login.');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -24,13 +40,14 @@ function Login() {
                 <h2 className="title" style={{ textAlign: 'center', marginBottom: '1.5rem' }}>Acesso Restrito</h2>
                 <form onSubmit={handleLogin}>
                     <div className="form-group">
-                        <label className="form-label">Usuário</label>
+                        <label className="form-label">Email</label>
                         <input
-                            type="text"
+                            type="email"
                             className="form-input"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
-                            placeholder="Digite seu usuário"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            placeholder="Digite seu email"
+                            required
                         />
                     </div>
                     <div className="form-group">
@@ -38,14 +55,15 @@ function Login() {
                         <input
                             type="password"
                             className="form-input"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
+                            value={senha}
+                            onChange={(e) => setSenha(e.target.value)}
                             placeholder="Digite sua senha"
+                            required
                         />
                     </div>
                     {error && <p style={{ color: 'var(--danger)', marginBottom: '1rem' }}>{error}</p>}
-                    <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>
-                        Entrar
+                    <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={loading}>
+                        {loading ? 'Entrando...' : 'Entrar'}
                     </button>
                 </form>
             </div>

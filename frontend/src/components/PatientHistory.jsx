@@ -66,8 +66,8 @@ function PatientHistory() {
             body: tableRows,
             startY: 50,
             theme: 'grid',
-            headStyles: { fillColor: [37, 99, 235] },
-            alternateRowStyles: { fillColor: [243, 244, 246] }
+            headStyles: { fillColor: [24, 129, 140] }, // --primary-color #18818C
+            alternateRowStyles: { fillColor: [213, 242, 234] } // --accent-light #D5F2EA
         });
 
         doc.save(`relatorio_${paciente.nome.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`);
@@ -86,15 +86,25 @@ function PatientHistory() {
 
     return (
         <div className="container">
-            <div className="header">
-                <div>
-                    <h1 className="title">Histórico: {paciente?.nome}</h1>
-                    <p style={{ color: 'var(--text-secondary)' }}>Visualizando {leituras.length} registros</p>
+            <div className="header" style={{ alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <button
+                        className="btn-icon-dark"
+                        onClick={() => navigate('/monitoramento')}
+                        title="Voltar ao Monitoramento"
+                        style={{ borderRadius: '50%', width: '40px', height: '40px' }}
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" /></svg>
+                    </button>
+                    <div>
+                        <h1 className="title" style={{ margin: 0 }}>Histórico: {paciente?.nome}</h1>
+                        <p style={{ color: 'var(--text-secondary)', margin: 0 }}>Visualizando {leituras.length} registros</p>
+                    </div>
                 </div>
                 <div style={{ display: 'flex', gap: '1rem' }}>
-                    <button className="btn" onClick={() => navigate('/pacientes')}>Voltar</button>
-                    <button className="btn btn-primary" onClick={generateReport}>
-                        📄 Baixar Relatório PDF
+                    <button className="btn btn-primary" onClick={generateReport} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
+                        Baixar PDF
                     </button>
                 </div>
             </div>

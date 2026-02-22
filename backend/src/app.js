@@ -4,6 +4,9 @@ require('dotenv').config();
 
 const webhookController = require('./controllers/webhookController');
 const pacientesController = require('./controllers/pacientesController');
+const financeiroController = require('./controllers/financeiroController');
+const authController = require('./controllers/authController');
+const adminController = require('./controllers/adminController');
 const cronService = require('./services/cronService');
 
 const app = express();
@@ -18,8 +21,29 @@ app.get('/api/pacientes', pacientesController.getPacientes);
 app.post('/api/pacientes', pacientesController.createPaciente);
 app.get('/api/pacientes/:id', pacientesController.getPacienteById);
 app.put('/api/pacientes/:id', pacientesController.updatePaciente);
+app.delete('/api/pacientes/:id', pacientesController.deletePaciente);
 app.get('/api/pacientes/:id/leituras', pacientesController.getLeituras);
+app.get('/api/leituras/recentes', pacientesController.getRecentLeituras);
 app.get('/api/historico/:usuarioId', pacientesController.getHistorico);
+
+// Financial Routes
+app.get('/api/financeiro/stats', financeiroController.getFinanceiroStats);
+app.post('/api/financeiro/boletos', financeiroController.createBoleto);
+app.get('/api/financeiro/pagamentos', financeiroController.getPagamentos);
+
+// Auth Routes
+app.post('/api/auth/login', authController.login);
+app.post('/api/auth/reset-password', authController.resetPassword);
+
+// Admin Routes
+app.get('/api/admin/users', adminController.listUsers);
+app.post('/api/admin/users', adminController.createUser);
+app.delete('/api/admin/users/:id', adminController.deleteUser);
+app.post('/api/admin/users/:id/reset-password', adminController.adminResetPassword);
+
+// System Settings Routes
+app.get('/api/sistema/settings', adminController.getSettings);
+app.put('/api/sistema/settings', adminController.updateSettings);
 
 const zapiService = require('./services/zapiService');
 

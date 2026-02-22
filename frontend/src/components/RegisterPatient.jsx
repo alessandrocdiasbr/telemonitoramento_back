@@ -13,7 +13,8 @@ function RegisterPatient() {
         nome_familiar: '',
         cpf: '',
         cpf_familiar: '',
-        consentimento_lgpd: false
+        consentimento_lgpd: false,
+        plano: 'standart'
     });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -34,7 +35,7 @@ function RegisterPatient() {
         try {
             await api.post('/pacientes', formData);
             alert('Paciente cadastrado com sucesso!');
-            navigate('/dashboard');
+            navigate(-1);
         } catch (err) {
             console.error('Erro ao cadastrar paciente:', err);
             setError(err.response?.data?.error || 'Erro ao cadastrar paciente. Tente novamente.');
@@ -45,9 +46,18 @@ function RegisterPatient() {
 
     return (
         <div className="container">
-            <div className="header">
-                <h1 className="title">Novo Paciente</h1>
-                <button className="btn" onClick={() => navigate('/dashboard')}>Voltar</button>
+            <div className="header" style={{ alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <button
+                        className="btn-icon-dark"
+                        onClick={() => navigate(-1)}
+                        title="Voltar"
+                        style={{ borderRadius: '50%', width: '40px', height: '40px' }}
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" /></svg>
+                    </button>
+                    <h1 className="title" style={{ margin: 0 }}>Novo Paciente</h1>
+                </div>
             </div>
 
             <div className="card" style={{ maxWidth: '600px', margin: '0 auto' }}>
@@ -156,6 +166,28 @@ function RegisterPatient() {
                             onChange={handleChange}
                         />
                         <label htmlFor="consentimento_lgpd" style={{ cursor: 'pointer' }}>Termo de Consentimento LGPD assinado</label>
+                    </div>
+
+                    <div style={{ marginBottom: '2rem' }}>
+                        <h3 style={{ borderBottom: '1px solid #e5e7eb', paddingBottom: '0.5rem', marginBottom: '1rem', color: 'var(--primary-color)' }}>Plano Contratado</h3>
+                        <div className="plan-selector">
+                            <div
+                                className={`plan-card ${formData.plano === 'standart' ? 'active' : ''}`}
+                                onClick={() => setFormData(prev => ({ ...prev, plano: 'standart' }))}
+                            >
+                                <span className="plan-name">Standart</span>
+                                <span className="plan-price">R$ 20</span>
+                                <span className="plan-badge badge-standart">Básico</span>
+                            </div>
+                            <div
+                                className={`plan-card ${formData.plano === 'premium' ? 'active' : ''}`}
+                                onClick={() => setFormData(prev => ({ ...prev, plano: 'premium' }))}
+                            >
+                                <span className="plan-name">Premium</span>
+                                <span className="plan-price">R$ 30</span>
+                                <span className="plan-badge badge-premium">Completo</span>
+                            </div>
+                        </div>
                     </div>
 
                     <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={loading}>

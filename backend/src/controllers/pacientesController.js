@@ -8,6 +8,9 @@ async function getPacientes(req, res) {
         u.id, 
         u.nome, 
         u.telefone, 
+        u.telefone_familiar,
+        u.cpf,
+        u.plano,
         (
           SELECT json_build_object(
             'data_hora', l.data_hora,
@@ -21,6 +24,7 @@ async function getPacientes(req, res) {
           LIMIT 1
         ) as ultima_leitura
       FROM usuarios u
+      WHERE u.role = 'paciente'
       ORDER BY u.nome ASC
     `;
     const result = await db.query(query);
@@ -76,7 +80,7 @@ async function getHistorico(req, res) {
 
 // POST /api/pacientes
 async function createPaciente(req, res) {
-  const { nome, telefone, data_nascimento, telefone_familiar, nome_familiar, cpf, cpf_familiar, consentimento_lgpd } = req.body;
+  const { nome, telefone, data_nascimento, telefone_familiar, nome_familiar, cpf, cpf_familiar, consentimento_lgpd, plano } = req.body;
 
   // Validação básica
   if (!nome || !telefone || !telefone_familiar) {
@@ -85,11 +89,11 @@ async function createPaciente(req, res) {
 
   try {
     const query = `
-            INSERT INTO usuarios (nome, telefone, data_nascimento, telefone_familiar, nome_familiar, cpf, cpf_familiar, consentimento_lgpd)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            INSERT INTO usuarios (nome, telefone, data_nascimento, telefone_familiar, nome_familiar, cpf, cpf_familiar, consentimento_lgpd, plano)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
             RETURNING *
         `;
-    const values = [nome, telefone, data_nascimento || null, telefone_familiar, nome_familiar || null, cpf || null, cpf_familiar || null, consentimento_lgpd || false];
+    const values = [nome, telefone, data_nascimento || null, telefone_familiar, nome_familiar || null, cpf || null, cpf_familiar || null, consentimento_lgpd || false, plano || 'standart'];
 
     const result = await db.query(query, values);
     res.status(201).json(result.rows[0]);
@@ -126,7 +130,7 @@ async function getPacienteById(req, res) {
 // PUT /api/pacientes/:id
 async function updatePaciente(req, res) {
   const { id } = req.params;
-  const { nome, telefone, data_nascimento, telefone_familiar, nome_familiar, cpf, cpf_familiar, consentimento_lgpd } = req.body;
+  const { nome, telefone, data_nascimento, telefone_familiar, nome_familiar, cpf, cpf_familiar, consentimento_lgpd, plano } = req.body;
 
   if (!nome || !telefone || !telefone_familiar) {
     return res.status(400).json({ error: 'Nome, telefone e telefone familiar são obrigatórios.' });
@@ -135,8 +139,8 @@ async function updatePaciente(req, res) {
   try {
     const query = `
       UPDATE usuarios 
-      SET nome = $1, telefone = $2, data_nascimento = $3, telefone_familiar = $4, nome_familiar = $5, cpf = $6, cpf_familiar = $7, consentimento_lgpd = $8
-      WHERE id = $9
+      SET nome = $1, telefone = $2, data_nascimento = $3, telefone_familiar = $4, nome_familiar = $5, cpf = $6, cpf_familiar = $7, consentimento_lgpd = $8, plano = $9
+      WHERE id = $10
       RETURNING *
     `;
     const values = [
@@ -148,6 +152,7 @@ async function updatePaciente(req, res) {
       cpf || null,
       cpf_familiar || null,
       consentimento_lgpd || false,
+      plano || 'standart',
       id
     ];
 
@@ -195,4 +200,46 @@ async function getLeituras(req, res) {
   }
 }
 
-module.exports = { getPacientes, getHistorico, createPaciente, getPacienteById, updatePaciente, getLeituras };
+// GET /api/leituras/recentes
+async function getRecentLeituras(req, res) {
+  try {
+    const query = `
+      SELECT 
+        l.id,
+        u.nome as paciente_nome,
+        to_char(l.data_hora, 'DD/MM/YYYY HH24:MI') as data_formatada,
+        CONCAT(l.pressao_sistolica, '/', l.pressao_diastolica) as pressao,
+        l.temperatura,
+        l.classificacao_risco as risco
+      FROM leituras l
+      JOIN usuarios u ON l.usuario_id = u.id
+      ORDER BY l.data_hora DESC
+      LIMIT 10
+    `;
+    const result = await db.query(query);
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching recent leituras:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
+// DELETE /api/pacientes/:id
+async function deletePaciente(req, res) {
+  const { id } = req.params;
+  try {
+    const query = 'DELETE FROM usuarios WHERE id = $1 RETURNING *';
+    const result = await db.query(query, [id]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Paciente não encontrado.' });
+    }
+
+    res.json({ message: 'Paciente excluído com sucesso.' });
+  } catch (error) {
+    console.error('Error deleting paciente:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
+module.exports = { getPacientes, getHistorico, createPaciente, getPacienteById, updatePaciente, getLeituras, getRecentLeituras, deletePaciente };
