@@ -102,7 +102,8 @@ PORT=3000
 
 1. **Webhook WhatsApp**: Configure o webhook do Twilio para apontar para `your-domain/webhook`.
 2. **Dashboard**: Acesse `http://localhost:5173`.
-   - Login: `admin` / `admin123`
+   - Login:
+   - 
 
 ## Funcionalidades
 
