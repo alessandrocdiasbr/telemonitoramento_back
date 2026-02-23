@@ -10,15 +10,15 @@ async function getFinanceiroStats(req, res) {
         // Buscar preços atuais do sistema
         const pricesRes = await db.query('SELECT chave, valor FROM sistema_settings');
         const prices = {};
-        pricesRes.rows.forEach(p => prices[p.chave] = parseFloat(p.valor));
+        pricesRes.rows.forEach(p => prices[p.chave] = p.valor);
 
         // Receita Projetada (Baseada nos planos atuais gravados no sistema)
         const receitaProjetadaResult = await db.query(`
           SELECT 
-            SUM(CASE WHEN plano = 'premium' THEN $1 ELSE $2 END) as projetada
+            SUM(CASE WHEN plano = 'premium' THEN $1::numeric ELSE $2::numeric END) as projetada
           FROM usuarios
           WHERE role = 'paciente'
-        `, [prices.preco_premium || 30, prices.preco_standart || 20]);
+        `, [prices.preco_premium || 30.00, prices.preco_standart || 20.00]);
         const receitaProjetada = parseFloat(receitaProjetadaResult.rows[0].projetada) || 0;
 
         // Valores Recebidos (pagamentos com status 'pago')

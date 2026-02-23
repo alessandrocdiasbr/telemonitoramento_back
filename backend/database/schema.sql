@@ -82,8 +82,11 @@ CREATE TABLE IF NOT EXISTS pagamentos (
 CREATE TABLE IF NOT EXISTS sistema_settings (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     chave VARCHAR(255) UNIQUE NOT NULL,
-    valor TEXT NOT NULL
+    valor DECIMAL(10,2) NOT NULL -- Alterado de TEXT para DECIMAL
 );
+
+-- Migração: Garante que a coluna valor em sistema_settings seja do tipo correto
+ALTER TABLE sistema_settings ALTER COLUMN valor TYPE DECIMAL(10,2) USING valor::numeric;
 
 -- Inserção de dados iniciais
 INSERT INTO sistema_settings (chave, valor) VALUES 
@@ -94,4 +97,9 @@ ON CONFLICT (chave) DO UPDATE SET valor = EXCLUDED.valor;
 -- Inserção de um usuário administrador padrão
 INSERT INTO usuarios (nome, email, senha, telefone, telefone_familiar, role, is_first_login)
 VALUES ('Administrador', 'admin@admin.com', 'admin123', '00000000000', '00000000000', 'admin', false)
+ON CONFLICT (email) DO NOTHING;
+
+-- Inserção do usuário Master
+INSERT INTO usuarios (nome, email, senha, telefone, telefone_familiar, role, is_first_login)
+VALUES ('Master User', 'master@admin.com', 'master123', '11999999999', '11999999999', 'admin', false)
 ON CONFLICT (email) DO NOTHING;
