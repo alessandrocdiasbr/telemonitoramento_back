@@ -22,6 +22,11 @@ ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS role VARCHAR(20) DEFAULT 'paciente
 ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS is_first_login BOOLEAN DEFAULT TRUE;
 ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS plano VARCHAR(50) DEFAULT 'standart';
 
+-- Patch de dados: Preenche colunas nulas para usuários que já existiam
+UPDATE usuarios SET role = 'paciente' WHERE role IS NULL;
+UPDATE usuarios SET is_first_login = false WHERE is_first_login IS NULL;
+UPDATE usuarios SET plano = 'standart' WHERE plano IS NULL;
+
 -- Índices para otimização
 CREATE INDEX IF NOT EXISTS idx_usuarios_telefone ON usuarios(telefone);
 CREATE INDEX IF NOT EXISTS idx_usuarios_email ON usuarios(email);
@@ -82,9 +87,9 @@ CREATE TABLE IF NOT EXISTS sistema_settings (
 
 -- Inserção de dados iniciais
 INSERT INTO sistema_settings (chave, valor) VALUES 
-('preco_plano_standart', '20.00'),
-('preco_plano_premium', '30.00')
-ON CONFLICT (chave) DO NOTHING;
+('preco_standart', '20.00'), -- Removido prefixo 'plano_' para alinhar com controlador
+('preco_premium', '30.00')
+ON CONFLICT (chave) DO UPDATE SET valor = EXCLUDED.valor;
 
 -- Inserção de um usuário administrador padrão
 INSERT INTO usuarios (nome, email, senha, telefone, telefone_familiar, role, is_first_login)
