@@ -3,7 +3,7 @@ const path = require('path');
 const { Pool } = require('pg');
 require('dotenv').config({ path: path.join(__dirname, '../.env') });
 
-const schemaPath = path.join(__dirname, '../../database/schema.sql');
+const schemaPath = path.join(__dirname, '../database/schema.sql');
 
 if (!process.env.DATABASE_URL) {
     console.error('Error: DATABASE_URL is not defined in .env');
