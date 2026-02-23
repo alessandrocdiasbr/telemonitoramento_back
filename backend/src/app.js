@@ -15,6 +15,8 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+console.log('Registrando rotas...');
+
 // Routes
 app.post('/webhook', webhookController.handleIncomingMessage);
 app.get('/api/pacientes', pacientesController.getPacientes);
