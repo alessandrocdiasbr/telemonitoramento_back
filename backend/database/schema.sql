@@ -5,20 +5,22 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TABLE IF NOT EXISTS usuarios (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     nome VARCHAR(255) NOT NULL,
-    email VARCHAR(255) UNIQUE, -- Adicionado para login
-    senha VARCHAR(255),        -- Adicionado para login
     telefone VARCHAR(20) UNIQUE NOT NULL, -- formato: +5531999999999
     data_nascimento DATE,
     telefone_familiar VARCHAR(20) NOT NULL,
     nome_familiar VARCHAR(255),
     cpf VARCHAR(14) UNIQUE,
     cpf_familiar VARCHAR(14),
-    role VARCHAR(20) DEFAULT 'paciente', -- 'admin' ou 'paciente'
-    is_first_login BOOLEAN DEFAULT TRUE,
-    plano VARCHAR(50) DEFAULT 'standart',
     consentimento_lgpd BOOLEAN DEFAULT FALSE,
     data_registro TIMESTAMP DEFAULT NOW()
 );
+
+-- Migração: Adiciona colunas faltantes se a tabela já existir
+ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS email VARCHAR(255) UNIQUE;
+ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS senha VARCHAR(255);
+ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS role VARCHAR(20) DEFAULT 'paciente';
+ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS is_first_login BOOLEAN DEFAULT TRUE;
+ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS plano VARCHAR(50) DEFAULT 'standart';
 
 -- Índices para otimização
 CREATE INDEX IF NOT EXISTS idx_usuarios_telefone ON usuarios(telefone);
