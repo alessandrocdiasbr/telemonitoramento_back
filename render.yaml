@@ -7,7 +7,7 @@ services:
     region: oregon
     rootDir: backend
     buildCommand: npm install
-    startCommand: node scripts/init-db.js && npm start
+    startCommand: npm start
     envVars:
       - key: PORT
         value: 10000

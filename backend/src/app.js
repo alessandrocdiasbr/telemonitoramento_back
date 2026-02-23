@@ -107,5 +107,20 @@ const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
+
+    // Inicialização do banco integrada para diagnóstico no Render
+    const { exec } = require('child_process');
+    console.log('Iniciando migração de banco de dados...');
+    exec('node scripts/init-db.js', (error, stdout, stderr) => {
+        if (error) {
+            console.error(`Erro na migração: ${error.message}`);
+            return;
+        }
+        if (stderr) {
+            console.error(`Stderr migração: ${stderr}`);
+        }
+        console.log(`Stdout migração: ${stdout}`);
+    });
+
     cronService.initCronJobs();
 });
