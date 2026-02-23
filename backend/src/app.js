@@ -45,6 +45,30 @@ app.post('/api/admin/users/:id/reset-password', adminController.adminResetPasswo
 app.get('/api/sistema/settings', adminController.getSettings);
 app.put('/api/sistema/settings', adminController.updateSettings);
 
+// Health Check Route (Diagnóstico)
+const db = require('./config/database');
+app.get('/api/health-check', async (req, res) => {
+    try {
+        const result = await db.query('SELECT current_database(), current_user');
+        const columns = await db.query(`
+            SELECT column_name, data_type 
+            FROM information_schema.columns 
+            WHERE table_name = 'usuarios'
+        `);
+        res.json({
+            status: 'ok',
+            database: result.rows[0],
+            usuarios_columns: columns.rows
+        });
+    } catch (error) {
+        res.status(500).json({
+            status: 'error',
+            message: error.message,
+            code: error.code
+        });
+    }
+});
+
 const zapiService = require('./services/zapiService');
 
 // Trigger Test Cron (endpoint somente para teste manual se necessário)
