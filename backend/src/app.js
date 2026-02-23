@@ -54,15 +54,27 @@ const db = require('./config/database');
 app.get('/api/health-check', async (req, res) => {
     try {
         const result = await db.query('SELECT current_database(), current_user');
-        const columns = await db.query(`
-            SELECT column_name, data_type 
-            FROM information_schema.columns 
-            WHERE table_name = 'usuarios'
+        const tables = await db.query(`
+            SELECT table_name 
+            FROM information_schema.tables 
+            WHERE table_schema = 'public'
         `);
+
+        const schemaDetails = {};
+        for (const table of tables.rows) {
+            const columns = await db.query(`
+                SELECT column_name, data_type 
+                FROM information_schema.columns 
+                WHERE table_name = $1
+            `, [table.table_name]);
+            schemaDetails[table.table_name] = columns.rows;
+        }
+
         res.json({
             status: 'ok',
             database: result.rows[0],
-            usuarios_columns: columns.rows
+            tables: tables.rows.map(t => t.table_name),
+            schema: schemaDetails
         });
     } catch (error) {
         res.status(500).json({
