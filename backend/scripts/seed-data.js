@@ -1,7 +1,9 @@
 const { Client } = require('pg');
+require('dotenv').config();
 
 const client = new Client({
-    connectionString: 'postgresql://postgres:postgres@localhost:5434/telemonitoramento'
+    connectionString: process.env.DATABASE_URL,
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
 async function seedData() {
