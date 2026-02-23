@@ -5,18 +5,24 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TABLE IF NOT EXISTS usuarios (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     nome VARCHAR(255) NOT NULL,
+    email VARCHAR(255) UNIQUE, -- Adicionado para login
+    senha VARCHAR(255),        -- Adicionado para login
     telefone VARCHAR(20) UNIQUE NOT NULL, -- formato: +5531999999999
     data_nascimento DATE,
     telefone_familiar VARCHAR(20) NOT NULL,
     nome_familiar VARCHAR(255),
     cpf VARCHAR(14) UNIQUE,
     cpf_familiar VARCHAR(14),
+    role VARCHAR(20) DEFAULT 'paciente', -- 'admin' ou 'paciente'
+    is_first_login BOOLEAN DEFAULT TRUE,
+    plano VARCHAR(50) DEFAULT 'standart',
     consentimento_lgpd BOOLEAN DEFAULT FALSE,
     data_registro TIMESTAMP DEFAULT NOW()
 );
 
 -- Índices para otimização
 CREATE INDEX IF NOT EXISTS idx_usuarios_telefone ON usuarios(telefone);
+CREATE INDEX IF NOT EXISTS idx_usuarios_email ON usuarios(email);
 
 -- 2. Tabela de Leituras (Histórico de PA e Temperatura)
 CREATE TABLE IF NOT EXISTS leituras (
@@ -53,6 +59,32 @@ CREATE TABLE IF NOT EXISTS mensagens_agendadas (
     ativo BOOLEAN DEFAULT TRUE
 );
 
--- Inserção de dados iniciais para teste (Opcional)
--- INSERT INTO usuarios (nome, telefone, telefone_familiar, consentimento_lgpd) 
--- VALUES ('Paciente Teste', '+5531999999999', '+5531888888888', true);
+-- 5. Tabela de Pagamentos/Financeiro
+CREATE TABLE IF NOT EXISTS pagamentos (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    paciente_id UUID REFERENCES usuarios(id) ON DELETE CASCADE,
+    valor DECIMAL(10,2),
+    data_vencimento DATE,
+    status VARCHAR(20) DEFAULT 'pendente', -- 'pendente', 'pago'
+    link_boleto TEXT,
+    data_pagamento TIMESTAMP,
+    data_criacao TIMESTAMP DEFAULT NOW()
+);
+
+-- 6. Tabela de Configurações do Sistema
+CREATE TABLE IF NOT EXISTS sistema_settings (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    chave VARCHAR(255) UNIQUE NOT NULL,
+    valor TEXT NOT NULL
+);
+
+-- Inserção de dados iniciais
+INSERT INTO sistema_settings (chave, valor) VALUES 
+('preco_plano_standart', '20.00'),
+('preco_plano_premium', '30.00')
+ON CONFLICT (chave) DO NOTHING;
+
+-- Inserção de um usuário administrador padrão
+INSERT INTO usuarios (nome, email, senha, telefone, telefone_familiar, role, is_first_login)
+VALUES ('Administrador', 'admin@admin.com', 'admin123', '00000000000', '00000000000', 'admin', false)
+ON CONFLICT (email) DO NOTHING;
