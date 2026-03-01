@@ -25,6 +25,8 @@ services:
         sync: false
       - key: ZAPI_CLIENT_TOKEN
         sync: false
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
 
   # Frontend - Static Site
   - type: web
