@@ -147,10 +147,12 @@ app.post('/api/send-message', async (req, res) => {
         res.status(500).json({
             error: 'Failed to send message',
             message: error.message,
-            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+            telegram_details: error.response?.description || error.description || null,
+            payload_received: { telegram_chat_id, phone, message_len: message?.length }
         });
     }
 });
+
 
 
 

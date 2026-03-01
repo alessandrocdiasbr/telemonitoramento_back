@@ -18,9 +18,11 @@ async function sendTelegramMessage(chatId, text, options = { parse_mode: 'HTML' 
     }
 
     try {
-        console.log(`Enviando mensagem para o chat Telegram ${chatId}...`);
+        console.log(`Enviando mensagem para o chat Telegram [${chatId}] (Tipo: ${typeof chatId})...`);
+        if (!chatId) throw new Error('Chat ID está vazio ou indefinido');
         await bot.telegram.sendMessage(chatId, text, options);
         console.log(`Mensagem enviada com sucesso para ${chatId}`);
+
     } catch (error) {
         console.error(`Erro ao enviar mensagem para ${chatId} via Telegram:`, error.message);
         throw error;
