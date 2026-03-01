@@ -21,6 +21,9 @@ ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS senha VARCHAR(255);
 ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS role VARCHAR(20) DEFAULT 'paciente';
 ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS is_first_login BOOLEAN DEFAULT TRUE;
 ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS plano VARCHAR(50) DEFAULT 'standart';
+ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS telegram_chat_id VARCHAR(50) UNIQUE;
+ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS telegram_chat_id_familiar VARCHAR(50);
+ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS nivel_risco VARCHAR(10) DEFAULT 'BAIXO' CHECK (nivel_risco IN ('BAIXO', 'MEDIO', 'ALTO'));
 
 -- Patch de dados: Preenche colunas nulas para usuários que já existiam
 UPDATE usuarios SET role = 'paciente' WHERE role IS NULL;
@@ -95,11 +98,49 @@ INSERT INTO sistema_settings (chave, valor) VALUES
 ON CONFLICT (chave) DO UPDATE SET valor = EXCLUDED.valor;
 
 -- Inserção de um usuário administrador padrão
-INSERT INTO usuarios (nome, email, senha, telefone, telefone_familiar, role, is_first_login)
-VALUES ('Administrador', 'admin@admin.com', 'admin123', '00000000000', '00000000000', 'admin', false)
-ON CONFLICT (email) DO NOTHING;
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM usuarios WHERE telefone = '00000000000' OR email = 'admin@admin.com') THEN
+        INSERT INTO usuarios (nome, email, senha, telefone, telefone_familiar, role, is_first_login)
+        VALUES ('Administrador', 'admin@admin.com', 'admin123', '00000000000', '00000000000', 'admin', false);
+    END IF;
+END $$;
 
 -- Inserção do usuário Master
-INSERT INTO usuarios (nome, email, senha, telefone, telefone_familiar, role, is_first_login)
-VALUES ('Master User', 'master@admin.com', 'master123', '11999999999', '11999999999', 'admin', false)
-ON CONFLICT (email) DO NOTHING;
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM usuarios WHERE telefone = '11999999999' OR email = 'master@admin.com') THEN
+        INSERT INTO usuarios (nome, email, senha, telefone, telefone_familiar, role, is_first_login)
+        VALUES ('Master User', 'master@admin.com', 'master123', '11999999999', '11999999999', 'admin', false);
+    END IF;
+END $$;
+
+-- 7. Tabela de Mensagens
+CREATE TABLE IF NOT EXISTS mensagens (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    usuario_id UUID NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+    direcao VARCHAR(10) CHECK (direcao IN ('enviada', 'recebida')),
+    conteudo TEXT NOT NULL,
+    tipo VARCHAR(20) DEFAULT 'texto',
+    data_envio TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_mensagens_usuario_id ON mensagens(usuario_id);
+
+-- 8. Tabela de Monitoramentos (Novo da Migração Telegram)
+CREATE TABLE IF NOT EXISTS monitoramentos (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    usuario_id UUID NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+    tipo VARCHAR(30) NOT NULL, -- 'QUESTIONARIO_ENVIADO', 'RESPOSTA_RECEBIDA', 'ALERTA_GERADO', 'EMERGENCIA'
+    nivel_risco VARCHAR(10) NOT NULL, -- 'BAIXO', 'MEDIO', 'ALTO'
+    status VARCHAR(30) NOT NULL, -- 'AGUARDANDO_RESPOSTA', 'RESPONDIDO', 'ALERTA', 'EMERGENCIA'
+    respostas JSONB,
+    analise JSONB,
+    observacoes TEXT,
+    data_criacao TIMESTAMP DEFAULT NOW(),
+    data_atualizacao TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_monitoramentos_usuario_id ON monitoramentos(usuario_id);
+CREATE INDEX IF NOT EXISTS idx_monitoramentos_status ON monitoramentos(status);
+

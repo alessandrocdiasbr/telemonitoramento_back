@@ -11,6 +11,9 @@ async function getPacientes(req, res) {
         u.telefone_familiar,
         u.cpf,
         u.plano,
+        u.telegram_chat_id,
+        u.telegram_chat_id_familiar,
+        u.nivel_risco,
         (
           SELECT json_build_object(
             'data_hora', l.data_hora,
@@ -80,7 +83,7 @@ async function getHistorico(req, res) {
 
 // POST /api/pacientes
 async function createPaciente(req, res) {
-  const { nome, telefone, data_nascimento, telefone_familiar, nome_familiar, cpf, cpf_familiar, consentimento_lgpd, plano } = req.body;
+  const { nome, telefone, data_nascimento, telefone_familiar, nome_familiar, cpf, cpf_familiar, consentimento_lgpd, plano, telegram_chat_id, telegram_chat_id_familiar, nivel_risco } = req.body;
 
   // Validação básica
   if (!nome || !telefone || !telefone_familiar) {
@@ -89,11 +92,11 @@ async function createPaciente(req, res) {
 
   try {
     const query = `
-            INSERT INTO usuarios (nome, telefone, data_nascimento, telefone_familiar, nome_familiar, cpf, cpf_familiar, consentimento_lgpd, plano)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+            INSERT INTO usuarios (nome, telefone, data_nascimento, telefone_familiar, nome_familiar, cpf, cpf_familiar, consentimento_lgpd, plano, telegram_chat_id, telegram_chat_id_familiar, nivel_risco)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
             RETURNING *
         `;
-    const values = [nome, telefone, data_nascimento || null, telefone_familiar, nome_familiar || null, cpf || null, cpf_familiar || null, consentimento_lgpd || false, plano || 'standart'];
+    const values = [nome, telefone, data_nascimento || null, telefone_familiar, nome_familiar || null, cpf || null, cpf_familiar || null, consentimento_lgpd || false, plano || 'standart', telegram_chat_id || null, telegram_chat_id_familiar || null, nivel_risco || 'BAIXO'];
 
     const result = await db.query(query, values);
     res.status(201).json(result.rows[0]);
@@ -130,7 +133,7 @@ async function getPacienteById(req, res) {
 // PUT /api/pacientes/:id
 async function updatePaciente(req, res) {
   const { id } = req.params;
-  const { nome, telefone, data_nascimento, telefone_familiar, nome_familiar, cpf, cpf_familiar, consentimento_lgpd, plano } = req.body;
+  const { nome, telefone, data_nascimento, telefone_familiar, nome_familiar, cpf, cpf_familiar, consentimento_lgpd, plano, telegram_chat_id, telegram_chat_id_familiar, nivel_risco } = req.body;
 
   if (!nome || !telefone || !telefone_familiar) {
     return res.status(400).json({ error: 'Nome, telefone e telefone familiar são obrigatórios.' });
@@ -139,8 +142,8 @@ async function updatePaciente(req, res) {
   try {
     const query = `
       UPDATE usuarios 
-      SET nome = $1, telefone = $2, data_nascimento = $3, telefone_familiar = $4, nome_familiar = $5, cpf = $6, cpf_familiar = $7, consentimento_lgpd = $8, plano = $9
-      WHERE id = $10
+      SET nome = $1, telefone = $2, data_nascimento = $3, telefone_familiar = $4, nome_familiar = $5, cpf = $6, cpf_familiar = $7, consentimento_lgpd = $8, plano = $9, telegram_chat_id = $10, telegram_chat_id_familiar = $11, nivel_risco = $12
+      WHERE id = $13
       RETURNING *
     `;
     const values = [
@@ -153,6 +156,9 @@ async function updatePaciente(req, res) {
       cpf_familiar || null,
       consentimento_lgpd || false,
       plano || 'standart',
+      telegram_chat_id || null,
+      telegram_chat_id_familiar || null,
+      nivel_risco || 'BAIXO',
       id
     ];
 

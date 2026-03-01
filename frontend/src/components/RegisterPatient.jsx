@@ -13,6 +13,8 @@ function RegisterPatient() {
         nome_familiar: '',
         cpf: '',
         cpf_familiar: '',
+        telegram_chat_id: '',
+        telegram_chat_id_familiar: '',
         consentimento_lgpd: false,
         plano: 'standart'
     });
@@ -115,6 +117,19 @@ function RegisterPatient() {
                                 onChange={handleChange}
                             />
                         </div>
+
+                        <div className="form-group">
+                            <label className="form-label">Telegram Chat ID (Opcional)</label>
+                            <input
+                                type="text"
+                                name="telegram_chat_id"
+                                className="form-input"
+                                placeholder="8652672369"
+                                value={formData.telegram_chat_id}
+                                onChange={handleChange}
+                            />
+                            <small style={{ color: 'var(--text-secondary)' }}>Use para envio via Telegram em vez de WhatsApp</small>
+                        </div>
                     </div>
 
                     <div style={{ marginBottom: '2rem' }}>
@@ -153,6 +168,18 @@ function RegisterPatient() {
                                 value={formData.telefone_familiar}
                                 onChange={handleChange}
                                 required
+                            />
+                        </div>
+
+                        <div className="form-group">
+                            <label className="form-label">Telegram Familiar Chat ID</label>
+                            <input
+                                type="text"
+                                name="telegram_chat_id_familiar"
+                                className="form-input"
+                                placeholder="8652672369"
+                                value={formData.telegram_chat_id_familiar}
+                                onChange={handleChange}
                             />
                         </div>
                     </div>

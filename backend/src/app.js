@@ -7,7 +7,9 @@ const pacientesController = require('./controllers/pacientesController');
 const financeiroController = require('./controllers/financeiroController');
 const authController = require('./controllers/authController');
 const adminController = require('./controllers/adminController');
-const cronService = require('./services/cronService');
+const mobileController = require('./controllers/mobileController');
+const telegramController = require('./controllers/telegramController');
+const schedulerService = require('./services/schedulerService');
 
 const app = express();
 
@@ -21,6 +23,8 @@ console.log('Registrando rotas...');
 
 // Routes
 app.post('/webhook', webhookController.handleIncomingMessage);
+app.post('/telegram-webhook', telegramController.handleWebhook);
+
 app.get('/api/pacientes', pacientesController.getPacientes);
 app.post('/api/pacientes', pacientesController.createPaciente);
 app.get('/api/pacientes/:id', pacientesController.getPacienteById);
@@ -48,6 +52,11 @@ app.post('/api/admin/users/:id/reset-password', adminController.adminResetPasswo
 // System Settings Routes
 app.get('/api/sistema/settings', adminController.getSettings);
 app.put('/api/sistema/settings', adminController.updateSettings);
+
+// Mobile Routes
+app.post('/api/mobile/login', mobileController.login);
+app.post('/api/mobile/messages', mobileController.sendMessage);
+app.get('/api/mobile/messages/:usuarioId', mobileController.getMessages);
 
 // Health Check Route (Diagnóstico)
 const db = require('./config/database');
@@ -135,4 +144,5 @@ app.listen(PORT, () => {
     });
 
     cronService.initCronJobs();
+    schedulerService.start();
 });
