@@ -10,6 +10,8 @@ const adminController = require('./controllers/adminController');
 const mobileController = require('./controllers/mobileController');
 const telegramController = require('./controllers/telegramController');
 const schedulerService = require('./services/schedulerService');
+const telegramService = require('./services/telegramService');
+const cronService = require('./services/cronService');
 
 const app = express();
 
@@ -112,7 +114,7 @@ app.post('/api/send-message', async (req, res) => {
 
     try {
         if (telegram_chat_id) {
-            await telegramService.sendMessage(telegram_chat_id, message);
+            await telegramService.sendTelegramMessage(telegram_chat_id, message);
             return res.status(200).json({ success: true, message: 'Telegram message sent successfully' });
         }
 

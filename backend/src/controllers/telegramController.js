@@ -6,7 +6,7 @@ class TelegramController {
     /**
      * Handler principal para o webhook do Telegram
      */
-    async handleWebhook(req, res) {
+    handleWebhook = async (req, res) => {
         try {
             const update = req.body;
             console.log('Update recebido do Telegram:', JSON.stringify(update, null, 2));
@@ -27,7 +27,7 @@ class TelegramController {
     /**
      * Processa mensagens de texto e comandos
      */
-    async handleMessage(message) {
+    handleMessage = async (message) => {
         const chatId = message.chat.id.toString();
         const text = message.text;
         const from = message.from;
