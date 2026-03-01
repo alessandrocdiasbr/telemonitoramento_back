@@ -46,12 +46,19 @@ function Monitoramento() {
         if (!messageText.trim()) return;
         setSending(true);
         try {
-            const cleanPhone = selectedPaciente.telefone.replace(/\D/g, '');
-            await api.post('/send-message', {
-                phone: cleanPhone,
+            const payload = {
                 message: messageText
-            });
+            };
+
+            if (selectedPaciente.telegram_chat_id) {
+                payload.telegram_chat_id = selectedPaciente.telegram_chat_id;
+            } else {
+                payload.phone = selectedPaciente.telefone.replace(/\D/g, '');
+            }
+
+            await api.post('/send-message', payload);
             alert('Mensagem enviada com sucesso!');
+
             setIsModalOpen(false);
         } catch (error) {
             console.error(error);
@@ -158,12 +165,13 @@ function Monitoramento() {
                                                 <button
                                                     className="btn-icon-dark"
                                                     title="Enviar Mensagem"
-                                                    style={{ color: '#25D366' }}
+                                                    style={{ color: paciente.telegram_chat_id ? '#0088cc' : '#25D366' }}
                                                     onClick={() => handleOpenModal(paciente)}
                                                 >
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 1 1-7.6-11.7 8.5 8.5 0 0 1 3.4.7L22 2l-1.5 5.1z" /></svg>
-                                                    Zap
+                                                    {paciente.telegram_chat_id ? 'Telegram' : 'Zap'}
                                                 </button>
+
                                                 <button
                                                     className="btn-icon-dark"
                                                     title="Automações"

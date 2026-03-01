@@ -104,25 +104,29 @@ app.post('/api/enviar-mensagem-programada', async (req, res) => {
 
 // Endpoint para envio manual de mensagem (Novo)
 app.post('/api/send-message', async (req, res) => {
-    const { phone, message } = req.body;
+    const { phone, message, telegram_chat_id } = req.body;
 
-    if (!phone || !message) {
-        return res.status(400).json({ error: 'Phone and message are required' });
+    if ((!phone && !telegram_chat_id) || !message) {
+        return res.status(400).json({ error: 'Phone or Telegram Chat ID and message are required' });
     }
 
     try {
-        await zapiService.sendWhatsAppMessage(phone, message);
-        res.status(200).json({ success: true, message: 'Message sent successfully' });
-    } catch (error) {
-        console.error('Error sending manual message:', error.response?.data || error.message);
+        if (telegram_chat_id) {
+            await telegramService.sendMessage(telegram_chat_id, message);
+            return res.status(200).json({ success: true, message: 'Telegram message sent successfully' });
+        }
 
-        const statusCode = error.response?.status || 500;
-        res.status(statusCode).json({
+        await zapiService.sendWhatsAppMessage(phone, message);
+        res.status(200).json({ success: true, message: 'WhatsApp message sent successfully' });
+    } catch (error) {
+        console.error('Error sending manual message:', error.message);
+        res.status(500).json({
             error: 'Failed to send message',
-            details: error.response?.data || error.message
+            details: error.message
         });
     }
 });
+
 
 const PORT = process.env.PORT || 3000;
 

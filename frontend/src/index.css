@@ -659,6 +659,23 @@ input:checked+.slider:before {
   color: #92400e;
 }
 
+/* Nível de Risco Badges */
+.badge-alto {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.badge-medio {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.badge-baixo {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+
 /* --- Responsive Media Queries --- */
 
 /* Mobile Devices (up to 768px) */

@@ -78,8 +78,10 @@ function PacientesList() {
                                     <th>Telefone</th>
                                     <th>Familiar</th>
                                     <th>Tel. Familiar</th>
+                                    <th>Risco</th>
                                     <th>Plano</th>
                                     <th>Ações</th>
+
                                 </tr>
                             </thead>
                             <tbody>
@@ -91,10 +93,16 @@ function PacientesList() {
                                         <td>{paciente.nome_familiar || '-'}</td>
                                         <td>{paciente.telefone_familiar}</td>
                                         <td>
+                                            <span className={`plan-badge badge-${(paciente.nivel_risco || 'BAIXO').toLowerCase()}`}>
+                                                {paciente.nivel_risco || 'BAIXO'}
+                                            </span>
+                                        </td>
+                                        <td>
                                             <span className={`plan-badge badge-${paciente.plano || 'standart'}`}>
                                                 {paciente.plano === 'premium' ? 'Premium' : 'Standart'}
                                             </span>
                                         </td>
+
                                         <td>
                                             <div style={{ display: 'flex', gap: '0.5rem' }}>
                                                 <button
