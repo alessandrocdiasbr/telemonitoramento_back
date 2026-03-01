@@ -128,7 +128,9 @@ app.get('/api/diagnostic', async (req, res) => {
 
     res.json({
         telegram: telegramStatus,
+        last_telegram_update: telegramController.getLastUpdate(),
         zapi: {
+
             instance_present: !!process.env.ZAPI_INSTANCE_ID,
             token_present: !!process.env.ZAPI_TOKEN
         },

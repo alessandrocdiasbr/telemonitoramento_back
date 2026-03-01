@@ -2,6 +2,9 @@ const db = require('../config/database');
 const telegramService = require('../services/telegramService');
 const messageService = require('../services/messageService');
 
+// Variável global simples para depuração em memória
+let lastTelegramUpdate = null;
+
 class TelegramController {
     /**
      * Handler principal para o webhook do Telegram
@@ -9,20 +12,29 @@ class TelegramController {
     handleWebhook = async (req, res) => {
         try {
             const update = req.body;
-            console.log('Update recebido do Telegram:', JSON.stringify(update, null, 2));
+            lastTelegramUpdate = {
+                timestamp: new Date().toISOString(),
+                body: update
+            };
+            console.log('--- NOVO UPDATE TELEGRAM ---');
+            console.log(JSON.stringify(update, null, 2));
+
 
             if (update.message) {
+                console.log('Processando mensagem...');
                 await this.handleMessage(update.message);
             } else if (update.callback_query) {
+                console.log('Processando callback_query...');
                 await this.handleCallback(update.callback_query);
             }
 
             res.status(200).send('OK');
         } catch (error) {
-            console.error('Erro no Telegram Webhook:', error);
+            console.error('ERRO CRÍTICO NO TELEGRAM WEBHOOK:', error);
             res.status(500).send('Internal Error');
         }
     }
+
 
     /**
      * Processa mensagens de texto e comandos
@@ -59,28 +71,30 @@ class TelegramController {
     /**
      * Boas-vindas ao comando /start
      */
-    async handleStart(chatId, from) {
+    handleStart = async (chatId, from) => {
+        console.log(`Enviando boas-vindas para ${chatId}`);
         const welcomeMsg = `Olá, <b>${from.first_name}</b>! 👋\n\nBem-vindo ao Sistema de Telemonitoramento de Saúde. Este canal será usado para acompanharmos sua pressão arterial e temperatura.\n\nSe você já é um paciente cadastrado, em breve receberá nossas mensagens de acompanhamento.`;
-        await telegramService.sendTelegramMessage(chatId, welcomeMsg);
+        return telegramService.sendTelegramMessage(chatId, welcomeMsg);
     }
 
     /**
      * Processa cliques em botões interativos
      */
-    async handleCallback(callback) {
+    handleCallback = async (callback) => {
         const chatId = callback.message.chat.id.toString();
         const data = callback.data;
 
         console.log(`Callback recebido de ${chatId}: ${data}`);
 
         // Aqui podemos tratar botões específicos se necessário
-        await telegramService.bot.telegram.answerCbQuery(callback.id, { text: 'Recebido!' });
+        return telegramService.bot.telegram.answerCbQuery(callback.id, { text: 'Recebido!' });
     }
+
 
     /**
      * Marca o monitoramento como respondido se houver um pendente
      */
-    async markMonitoringAsReplied(userId, responseText) {
+    markMonitoringAsReplied = async (userId, responseText) => {
         try {
             const query = `
                 UPDATE monitoramentos 
@@ -95,6 +109,13 @@ class TelegramController {
         } catch (error) {
             console.error('Erro ao atualizar status do monitoramento:', error);
         }
+    }
+
+    /**
+     * Recupera o último update recebido para depuração
+     */
+    getLastUpdate = () => {
+        return lastTelegramUpdate;
     }
 }
 
