@@ -106,12 +106,28 @@ app.post('/api/enviar-mensagem-programada', async (req, res) => {
 });
 
 // Endpoint de Diagnóstico para verificar variáveis de ambiente (sem expor segredos)
-app.get('/api/diagnostic', (req, res) => {
+app.get('/api/diagnostic', async (req, res) => {
+    let telegramStatus = {
+        token_present: !!process.env.TELEGRAM_BOT_TOKEN,
+        bot_initialized: !!telegramService.bot
+    };
+
+    if (telegramService.bot) {
+        try {
+            const botInfo = await telegramService.bot.telegram.getMe();
+            telegramStatus.connection = 'OK';
+            telegramStatus.bot_info = {
+                id: botInfo.id,
+                username: botInfo.username
+            };
+        } catch (err) {
+            telegramStatus.connection = 'FAILED';
+            telegramStatus.error = err.message;
+        }
+    }
+
     res.json({
-        telegram: {
-            token_present: !!process.env.TELEGRAM_BOT_TOKEN,
-            bot_initialized: !!telegramService.bot
-        },
+        telegram: telegramStatus,
         zapi: {
             instance_present: !!process.env.ZAPI_INSTANCE_ID,
             token_present: !!process.env.ZAPI_TOKEN
@@ -123,6 +139,7 @@ app.get('/api/diagnostic', (req, res) => {
         database_connected: !!db
     });
 });
+
 
 // Endpoint para envio manual de mensagem (Novo)
 app.post('/api/send-message', async (req, res) => {
