@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
+const PORT = process.env.PORT || 3000;
 
 const webhookController = require('./controllers/webhookController');
 const pacientesController = require('./controllers/pacientesController');
@@ -104,6 +105,25 @@ app.post('/api/enviar-mensagem-programada', async (req, res) => {
     res.send('Cron triggered manually (dummy endpoint)');
 });
 
+// Endpoint de Diagnóstico para verificar variáveis de ambiente (sem expor segredos)
+app.get('/api/diagnostic', (req, res) => {
+    res.json({
+        telegram: {
+            token_present: !!process.env.TELEGRAM_BOT_TOKEN,
+            bot_initialized: !!telegramService.bot
+        },
+        zapi: {
+            instance_present: !!process.env.ZAPI_INSTANCE_ID,
+            token_present: !!process.env.ZAPI_TOKEN
+        },
+        openai: {
+            key_present: !!process.env.OPENAI_API_KEY
+        },
+        node_env: process.env.NODE_ENV,
+        database_connected: !!db
+    });
+});
+
 // Endpoint para envio manual de mensagem (Novo)
 app.post('/api/send-message', async (req, res) => {
     const { phone, message, telegram_chat_id } = req.body;
@@ -114,23 +134,26 @@ app.post('/api/send-message', async (req, res) => {
 
     try {
         if (telegram_chat_id) {
+            console.log(`Tentando enviar via Telegram para ${telegram_chat_id}...`);
             await telegramService.sendTelegramMessage(telegram_chat_id, message);
             return res.status(200).json({ success: true, message: 'Telegram message sent successfully' });
         }
 
+        console.log(`Tentando enviar via WhatsApp para ${phone}...`);
         await zapiService.sendWhatsAppMessage(phone, message);
         res.status(200).json({ success: true, message: 'WhatsApp message sent successfully' });
     } catch (error) {
-        console.error('Error sending manual message:', error.message);
+        console.error('SERVER_ERROR_SEND_MESSAGE:', error);
         res.status(500).json({
             error: 'Failed to send message',
-            details: error.message
+            message: error.message,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
         });
     }
 });
 
 
-const PORT = process.env.PORT || 3000;
+
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
